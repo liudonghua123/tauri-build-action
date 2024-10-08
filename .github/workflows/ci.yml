@@ -46,7 +46,21 @@ jobs:
 
   test-action:
     name: GitHub Actions Test
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+        include:
+          - os: 'ubuntu-latest'
+            label: 'linux'
+            executable_extension: ''
+          - os: 'macos-latest'
+            label: 'macos'
+            executable_extension: ''
+          - os: 'windows-latest'
+            label: 'windows'
+            executable_extension: '.exe'
 
     steps:
       - name: Checkout
@@ -62,3 +76,8 @@ jobs:
           template: vanilla
           manager: npm
           frontend_dist: ../dist
+
+      - name: List build files
+        run: |
+          ls -la tauri-builds
+        shell: bash

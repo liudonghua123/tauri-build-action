@@ -6,6 +6,7 @@ import * as core from '@actions/core'
  */
 export async function execPromise(command: string) {
   return new Promise((resolve, reject) => {
+    core.info(`Running command: ${command}`)
     const command_process = exec(command)
     // Check and stream stdout to the parent process
     if (command_process.stdout) {

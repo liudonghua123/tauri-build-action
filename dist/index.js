@@ -24920,111 +24920,6 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 5197:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LinuxTauriBuild = void 0;
-const tauri_build_1 = __nccwpck_require__(6485);
-const core = __importStar(__nccwpck_require__(2186));
-const utils_1 = __nccwpck_require__(1314);
-class LinuxTauriBuild extends tauri_build_1.TauriBuild {
-    install_prerequisites() {
-        core.info('Installing prerequisites for Linux...');
-        // Add Linux-specific installation according to https://tauri.app/start/prerequisites/#linux
-        (0, utils_1.execPromise)('sudo apt update -y && sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev');
-    }
-    before_build() {
-        core.info('Before building for Linux...');
-        (0, utils_1.execPromise)('npm install');
-    }
-    build() {
-        core.info('Building for Linux...');
-        (0, utils_1.execPromise)('npm run tauri build');
-    }
-}
-exports.LinuxTauriBuild = LinuxTauriBuild;
-
-
-/***/ }),
-
-/***/ 7240:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MacOSTauriBuild = void 0;
-const tauri_build_1 = __nccwpck_require__(6485);
-const core = __importStar(__nccwpck_require__(2186));
-const utils_1 = __nccwpck_require__(1314);
-class MacOSTauriBuild extends tauri_build_1.TauriBuild {
-    install_prerequisites() {
-        core.info('Installing prerequisites for MacOS...');
-        // Add MacOS-specific installation according to https://tauri.app/start/prerequisites/#macos
-    }
-    before_build() {
-        core.info('Before building for MacOS...');
-        (0, utils_1.execPromise)('npm install');
-    }
-    build() {
-        core.info('Building for MacOS...');
-        (0, utils_1.execPromise)('npm run tauri build');
-    }
-}
-exports.MacOSTauriBuild = MacOSTauriBuild;
-
-
-/***/ }),
-
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -25069,20 +24964,22 @@ async function run() {
     try {
         const projectName = core.getInput('project_name') || 'tauri-app';
         const identifier = core.getInput('identifier') || 'com.tauri-app.app';
+        const version = core.getInput('version') || '0.1.0';
         const template = core.getInput('template') || 'vanilla';
         const manager = core.getInput('manager') || 'npm';
         const frontendDist = core.getInput('frontend_dist') || '../dist';
+        const icon = core.getInput('icon');
         const tauriConfJson = core.getInput('tauri_conf_json');
         const cargoToml = core.getInput('cargo_toml');
         const buildRs = core.getInput('build_rs');
         const libRs = core.getInput('lib_rs');
         const mainRs = core.getInput('main_rs');
         // Run `npm create tauri-app` command with the new inputs
-        await initialize(projectName, identifier, template, manager, frontendDist);
+        await initialize(projectName, identifier, version, template, manager, frontendDist, icon);
         // Optional file overwrites
         await overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs);
         // Build the Tauri app
-        await build();
+        await build(projectName, identifier, version);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
@@ -25090,43 +24987,55 @@ async function run() {
             core.setFailed(error.message);
     }
 }
-async function initialize(projectName, identifier, template, manager, frontendDist) {
+async function initialize(projectName, identifier, version, template, manager, frontendDist, icon) {
+    // Create the tauri project files via `npm create tauri-app`
     await (0, utils_1.execPromise)(`npm create tauri-app ${projectName} -- --identifier ${identifier} --template ${template} --manager ${manager} --yes --force`);
-    // Update `tauri.conf.json` with `frontend_dist`
+    // Update `build.frontendDist` and `version` of `tauri.conf.json`
     const tauriConfPath = path.join(projectName, 'src-tauri', 'tauri.conf.json');
     if (fs.existsSync(tauriConfPath)) {
         const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));
         tauriConf.build.frontendDist = frontendDist;
+        tauriConf.version = version;
+        core.info(`Updating tauri.conf.json with frontendDist: ${frontendDist}, version: ${version}`);
         fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2));
     }
-    // Move files from `project_name` to the current directory
+    // copy package.json and src-tauri from projectName to the root of the project
     const projectPath = path.join(process.cwd(), projectName);
-    fs.readdirSync(projectPath).forEach(file => {
-        const srcPath = path.join(projectPath, file);
-        const destPath = path.join(process.cwd(), file);
-        fs.renameSync(srcPath, destPath);
+    const filesToCopy = ['package.json', 'src-tauri'];
+    for (const file of filesToCopy) {
+        fs.cpSync(path.join(projectPath, file), path.join(process.cwd(), file), {
+            recursive: true
+        });
+    }
+    fs.rmSync(path.join(process.cwd(), projectName), {
+        recursive: true,
+        force: true
     });
+    // update icon if provided
+    if (icon && fs.existsSync(icon)) {
+        await (0, utils_1.execPromise)(`npm run tauri -- icon ${icon}`);
+    }
 }
-function build() {
+async function build(projectName, identifier, version) {
     const platform = os.platform();
     let tauriBuild;
     if (platform === 'win32') {
-        tauriBuild = new tauri_build_1.WindowsTauriBuild();
+        tauriBuild = new tauri_build_1.WindowsTauriBuild(projectName, identifier, version);
     }
     else if (platform === 'linux') {
-        tauriBuild = new tauri_build_1.LinuxTauriBuild();
+        tauriBuild = new tauri_build_1.LinuxTauriBuild(projectName, identifier, version);
     }
     else if (platform === 'darwin') {
-        tauriBuild = new tauri_build_1.MacOSTauriBuild();
+        tauriBuild = new tauri_build_1.MacOSTauriBuild(projectName, identifier, version);
     }
     else {
         throw new Error(`Unsupported platform: ${platform}`);
     }
-    tauriBuild.install_prerequisites();
-    tauriBuild.before_build();
-    tauriBuild.build();
+    await tauriBuild.install_prerequisites();
+    await tauriBuild.before_build();
+    await tauriBuild.build();
 }
-function overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs) {
+async function overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs) {
     if (tauriConfJson) {
         fs.writeFileSync(path.join('src-tauri', 'tauri.conf.json'), tauriConfJson);
     }
@@ -25153,63 +25062,271 @@ function overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.MacOSTauriBuild = exports.LinuxTauriBuild = exports.WindowsTauriBuild = exports.TauriBuild = void 0;
+exports.WindowsTauriBuild = exports.MacOSTauriBuild = exports.LinuxTauriBuild = exports.TauriBuild = void 0;
 class TauriBuild {
+    projectName;
+    identifier;
+    version;
+    os_label = 'unknown';
+    constructor(projectName, identifier, version) {
+        this.projectName = projectName;
+        this.identifier = identifier;
+        this.version = version;
+    }
 }
 exports.TauriBuild = TauriBuild;
-var windows_tauri_build_1 = __nccwpck_require__(7449);
-Object.defineProperty(exports, "WindowsTauriBuild", ({ enumerable: true, get: function () { return windows_tauri_build_1.WindowsTauriBuild; } }));
-var linux_tauri_build_1 = __nccwpck_require__(5197);
-Object.defineProperty(exports, "LinuxTauriBuild", ({ enumerable: true, get: function () { return linux_tauri_build_1.LinuxTauriBuild; } }));
-var macos_tauri_build_1 = __nccwpck_require__(7240);
-Object.defineProperty(exports, "MacOSTauriBuild", ({ enumerable: true, get: function () { return macos_tauri_build_1.MacOSTauriBuild; } }));
+var tauri_build_linux_1 = __nccwpck_require__(6391);
+Object.defineProperty(exports, "LinuxTauriBuild", ({ enumerable: true, get: function () { return tauri_build_linux_1.LinuxTauriBuild; } }));
+var tauri_build_macos_1 = __nccwpck_require__(3953);
+Object.defineProperty(exports, "MacOSTauriBuild", ({ enumerable: true, get: function () { return tauri_build_macos_1.MacOSTauriBuild; } }));
+var tauri_build_windows_1 = __nccwpck_require__(6498);
+Object.defineProperty(exports, "WindowsTauriBuild", ({ enumerable: true, get: function () { return tauri_build_windows_1.WindowsTauriBuild; } }));
 
 
 /***/ }),
 
-/***/ 1314:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ 6391:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.execPromise = execPromise;
-const child_process_1 = __nccwpck_require__(2081);
-/**
- * exec() wrapper that returns a Promise. Stream stdout and stderr to the parent process.
- * @param command The command to execute
- */
-async function execPromise(command) {
-    return new Promise((resolve, reject) => {
-        const command_process = (0, child_process_1.exec)(command);
-        // Check and stream stdout to the parent process
-        if (command_process.stdout) {
-            command_process.stdout.pipe(process.stdout);
-        }
-        // Check and stream stderr to the parent process
-        if (command_process.stderr) {
-            command_process.stderr.pipe(process.stderr);
-        }
-        // Handle process completion
-        command_process.on('close', code => {
-            if (code === 0) {
-                resolve(code); // Resolve if successful
+exports.LinuxTauriBuild = void 0;
+const tauri_build_1 = __nccwpck_require__(6485);
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+class LinuxTauriBuild extends tauri_build_1.TauriBuild {
+    os_label = 'linux';
+    async install_prerequisites() {
+        core.info('Installing prerequisites for Linux...');
+        // Add Linux-specific installation according to https://tauri.app/start/prerequisites/#linux
+        await (0, utils_1.execPromise)(`codename=$(lsb_release -cs) && sudo tee /etc/apt/sources.list << EOF
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename main multiverse universe restricted
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-security main multiverse universe restricted
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-updates main multiverse universe restricted
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-backports main multiverse universe restricted
+
+deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename main multiverse universe restricted
+deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-security main multiverse universe restricted
+deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-updates main multiverse universe restricted
+deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-backports main multiverse universe restricted
+EOF`);
+        await (0, utils_1.execPromise)('sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt update -y');
+        await (0, utils_1.execPromise)('sudo apt install -y gcc-multilib g++-multilib');
+        await (0, utils_1.execPromise)('sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev');
+        // install i386 dependencies, libayatana-appindicator3-dev:i386 is missing, see https://packages.ubuntu.com/noble/libayatana-appindicator3-dev
+        await (0, utils_1.execPromise)('sudo apt install -y libwebkit2gtk-4.1-dev:i386 libssl-dev:i386 librsvg2-dev:i386 libsoup-3.0-dev:i386');
+        // install aarch64 dependencies
+        await (0, utils_1.execPromise)('sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross patchelf:arm64 libwebkit2gtk-4.1-dev:arm64 libssl-dev:arm64 librsvg2-dev:arm64 libayatana-appindicator3-dev:arm64 libsoup-3.0-dev:arm64');
+        // install armhf dependencies
+        await (0, utils_1.execPromise)('sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross patchelf:armhf libwebkit2gtk-4.1-dev:armhf libssl-dev:armhf librsvg2-dev:armhf libayatana-appindicator3-dev:armhf libsoup-3.0-dev:armhf');
+    }
+    async before_build() {
+        core.info('Before building for Linux...');
+        await (0, utils_1.execPromise)('npm install');
+    }
+    async build() {
+        core.info('Building for Linux...');
+        await (0, utils_1.execPromise)('rustup target add x86_64-unknown-linux-gnu');
+        await (0, utils_1.execPromise)('rustup target add i686-unknown-linux-gnu');
+        await (0, utils_1.execPromise)('rustup target add aarch64-unknown-linux-gnu');
+        await (0, utils_1.execPromise)('rustup target add armv7-unknown-linux-gnueabihf');
+        await (0, utils_1.execPromise)('npm run tauri -- info');
+        // build for x86_64
+        await (0, utils_1.execPromise)('npm run tauri -- build -t x86_64-unknown-linux-gnu');
+        // build for i686
+        await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig/:$PKG_CONFIG_PATH');
+        await (0, utils_1.execPromise)('export PKG_CONFIG_SYSROOT_DIR=/');
+        await (0, utils_1.execPromise)('npm run tauri -- build -t i686-unknown-linux-gnu');
+        // build for aarch64
+        await (0, utils_1.execPromise)('export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/');
+        await (0, utils_1.execPromise)('npm run tauri -- build -t aarch64-unknown-linux-gnu -b deb');
+        // build for armv7
+        await (0, utils_1.execPromise)('export PKG_CONFIG_SYSROOT_DIR=/usr/arm-linux-gnueabihf/');
+        await (0, utils_1.execPromise)('npm run tauri -- build -t armv7-unknown-linux-gnueabihf -b deb');
+    }
+    async after_build() {
+        core.info('After building for Linux...');
+        const outputDir = 'tauri-builds';
+        await (0, utils_1.execPromise)(`mkdir ${outputDir}`);
+        const filesToCopy = [
+            // x86_64
+            {
+                from: `src-tauri/target/x86_64-unknown-${this.os_label}-gnu/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64`
+            },
+            {
+                from: `src-tauri/target/x86_64-unknown-${this.os_label}-gnu/release/bundle/appimage/${this.projectName}_${this.version}_amd64.AppImage`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64.AppImage`
+            },
+            {
+                from: `src-tauri/target/x86_64-unknown-${this.os_label}-gnu/release/bundle/deb/${this.projectName}_${this.version}_amd64.deb`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64.deb`
+            },
+            // i686
+            {
+                from: `src-tauri/target/i686-unknown-${this.os_label}-gnu/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386`
+            },
+            {
+                from: `src-tauri/target/i686-unknown-${this.os_label}-gnu/release/bundle/appimage/${this.projectName}_${this.version}_i386.AppImage`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386.AppImage`
+            },
+            {
+                from: `src-tauri/target/i686-unknown-${this.os_label}-gnu/release/bundle/deb/${this.projectName}_${this.version}_i386.deb`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386.deb`
+            },
+            // aarch64
+            {
+                from: `src-tauri/target/aarch64-unknown-${this.os_label}-gnu/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_arm64`
+            },
+            {
+                from: `src-tauri/target/aarch64-unknown-${this.os_label}-gnu/release/bundle/deb/${this.projectName}_${this.version}_arm64.deb`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_arm64.deb`
+            },
+            // armv7
+            {
+                from: `src-tauri/target/aarch64-unknown-${this.os_label}-gnu/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_armhf`
+            },
+            {
+                from: `src-tauri/target/aarch64-unknown-${this.os_label}-gnu/release/bundle/deb/${this.projectName}_${this.version}_armhf.deb`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_armhf.deb`
             }
-            else {
-                reject(new Error(`Command failed with code ${code}`)); // Reject if there's an error
-            }
-        });
-        // Handle errors in starting the process
-        command_process.on('error', error => {
-            reject(error);
-        });
-    });
+        ];
+        for (const file of filesToCopy) {
+            await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+        }
+    }
 }
+exports.LinuxTauriBuild = LinuxTauriBuild;
 
 
 /***/ }),
 
-/***/ 7449:
+/***/ 3953:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MacOSTauriBuild = void 0;
+const tauri_build_1 = __nccwpck_require__(6485);
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+class MacOSTauriBuild extends tauri_build_1.TauriBuild {
+    os_label = 'macos';
+    async install_prerequisites() {
+        core.info('Installing prerequisites for MacOS...');
+        // Add MacOS-specific installation according to https://tauri.app/start/prerequisites/#macos
+    }
+    async before_build() {
+        core.info('Before building for MacOS...');
+        await (0, utils_1.execPromise)('npm install');
+    }
+    async build() {
+        core.info('Building for MacOS...');
+        await (0, utils_1.execPromise)('rustup target add x86_64-apple-darwin');
+        await (0, utils_1.execPromise)('rustup target add aarch64-apple-darwin');
+        await (0, utils_1.execPromise)('npm run tauri -- info');
+        // build for x86_64
+        await (0, utils_1.execPromise)('npm run tauri -- build -t x86_64-apple-darwin');
+        // build for aaarch64
+        await (0, utils_1.execPromise)('npm run tauri -- build -t aarch64-apple-darwin');
+        // build for universal
+        await (0, utils_1.execPromise)('npm run tauri -- build -t universal-apple-darwin');
+    }
+    async after_build() {
+        core.info('After building for MacOS...');
+        const outputDir = 'tauri-builds';
+        await (0, utils_1.execPromise)(`mkdir ${outputDir}`);
+        const filesToCopy = [
+            // x86_64
+            {
+                from: `src-tauri/target/x86_64-apple-darwin/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}`
+            },
+            {
+                from: `src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/${this.projectName}_${this.version}_x64.dmg`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x64.dmg`
+            },
+            // aarch64
+            {
+                from: `src-tauri/target/aarch64-apple-darwin/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}`
+            },
+            {
+                from: `src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/${this.projectName}_${this.version}_aarch64.dmg`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_aarch64.dmg`
+            },
+            // universal
+            {
+                from: `src-tauri/target/universal-apple-darwin/release/${this.projectName}`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}`
+            },
+            {
+                from: `src-tauri/target/universal-apple-darwin/release/bundle/dmg/${this.projectName}_${this.version}_universal.dmg`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_universal.dmg`
+            }
+        ];
+        for (const file of filesToCopy) {
+            await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+        }
+    }
+}
+exports.MacOSTauriBuild = MacOSTauriBuild;
+
+
+/***/ }),
+
+/***/ 6498:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -25243,20 +25360,146 @@ const tauri_build_1 = __nccwpck_require__(6485);
 const core = __importStar(__nccwpck_require__(2186));
 const utils_1 = __nccwpck_require__(1314);
 class WindowsTauriBuild extends tauri_build_1.TauriBuild {
-    install_prerequisites() {
+    os_label = 'windows';
+    async install_prerequisites() {
         core.info('Installing prerequisites for Windows...');
         // Add Windows-specific installation according to https://tauri.app/start/prerequisites/#windows
     }
-    before_build() {
+    async before_build() {
         core.info('Before building for Windows...');
-        (0, utils_1.execPromise)('npm install');
+        await (0, utils_1.execPromise)('npm install');
     }
-    build() {
+    async build() {
         core.info('Building for Windows...');
-        (0, utils_1.execPromise)('npm run tauri build');
+        await (0, utils_1.execPromise)('rustup target add x86_64-pc-windows-msvc');
+        await (0, utils_1.execPromise)('rustup target add i686-pc-windows-msvc');
+        await (0, utils_1.execPromise)('rustup target add aarch64-pc-windows-msvc');
+        await (0, utils_1.execPromise)('npm run tauri -- info');
+        // build for x86_64
+        await (0, utils_1.execPromise)('npm run tauri -- build -t x86_64-pc-windows-msvc');
+        // build for i686
+        await (0, utils_1.execPromise)('npm run tauri -- build -t i686-pc-windows-msvc');
+        // build for aarch64
+        await (0, utils_1.execPromise)('npm run tauri -- build -t aarch64-pc-windows-msvc');
+    }
+    async after_build() {
+        core.info('After building for Windows...');
+        const outputDir = 'tauri-builds';
+        await (0, utils_1.execPromise)(`mkdir ${outputDir}`);
+        const filesToCopy = [
+            // x86_64
+            {
+                from: `src-tauri/target/x86_64-pc-windows-msvc/release/${this.projectName}.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x64.exe`
+            },
+            {
+                from: `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/${this.projectName}_${this.version}_x64_en-US.msi`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x64_en-US.msi`
+            },
+            {
+                from: `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/${this.projectName}_${this.version}_x64-setup.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x64-setup.exe`
+            },
+            // i686
+            {
+                from: `src-tauri/target/i686-pc-windows-msvc/release/${this.projectName}.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x86.exe`
+            },
+            {
+                from: `src-tauri/target/i686-pc-windows-msvc/release/bundle/msi/${this.projectName}_${this.version}_x86_en-US.msi`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x86_en-US.msi`
+            },
+            {
+                from: `src-tauri/target/i686-pc-windows-msvc/release/bundle/nsis/${this.projectName}_${this.version}_x86-setup.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_x86-setup.exe`
+            },
+            // aarch64
+            {
+                from: `src-tauri/target/aarch64-pc-windows-msvc/release/${this.projectName}.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_arm64.exe`
+            },
+            {
+                from: `src-tauri/target/aarch64-pc-windows-msvc/release/bundle/msi/${this.projectName}_${this.version}_arm64_en-US.msi`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_arm64_en-US.msi`
+            },
+            {
+                from: `src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/${this.projectName}_${this.version}_arm64-setup.exe`,
+                to: `${outputDir}/${this.projectName}-${this.os_label}-${this.version}_arm64-setup.exe`
+            }
+        ];
+        for (const file of filesToCopy) {
+            await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+        }
     }
 }
 exports.WindowsTauriBuild = WindowsTauriBuild;
+
+
+/***/ }),
+
+/***/ 1314:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.execPromise = execPromise;
+const child_process_1 = __nccwpck_require__(2081);
+const core = __importStar(__nccwpck_require__(2186));
+/**
+ * exec() wrapper that returns a Promise. Stream stdout and stderr to the parent process.
+ * @param command The command to execute
+ */
+async function execPromise(command) {
+    return new Promise((resolve, reject) => {
+        core.info(`Running command: ${command}`);
+        const command_process = (0, child_process_1.exec)(command);
+        // Check and stream stdout to the parent process
+        if (command_process.stdout) {
+            command_process.stdout.pipe(process.stdout);
+        }
+        // Check and stream stderr to the parent process
+        if (command_process.stderr) {
+            command_process.stderr.pipe(process.stderr);
+        }
+        // Handle process completion
+        command_process.on('close', code => {
+            if (code === 0) {
+                resolve(code); // Resolve if successful
+            }
+            else {
+                reject(new Error(`Command failed with code ${code}`)); // Reject if there's an error
+            }
+        });
+        // Handle errors in starting the process
+        command_process.on('error', error => {
+            reject(error);
+        });
+    });
+}
 
 
 /***/ }),

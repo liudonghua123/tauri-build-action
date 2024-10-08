@@ -17,6 +17,10 @@ inputs:
     description: 'The identifier for the project'
     required: false
     default: 'com.tauri-app.app'
+  version:
+    description: 'The version for the project'
+    required: false
+    default: '0.1.0'
   template:
     description: 'The template to use for the project'
     required: false
@@ -29,6 +33,9 @@ inputs:
     description: 'The frontend distribution directory'
     required: false
     default: '../dist'
+  icon:
+    description: 'The icon for the project'
+    required: false
   tauri_conf_json:
     description: 'Optional tauri.conf.json file overwrite'
     required: false

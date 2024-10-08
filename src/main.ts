@@ -9,6 +9,7 @@ import {
   MacOSTauriBuild
 } from './tauri_build'
 import * as os from 'os'
+import { exec } from 'child_process'
 
 /**
  * The main function for the action.
@@ -19,9 +20,11 @@ export async function run(): Promise<void> {
     const projectName: string = core.getInput('project_name') || 'tauri-app'
     const identifier: string =
       core.getInput('identifier') || 'com.tauri-app.app'
+    const version: string = core.getInput('version') || '0.1.0'
     const template: string = core.getInput('template') || 'vanilla'
     const manager: string = core.getInput('manager') || 'npm'
     const frontendDist: string = core.getInput('frontend_dist') || '../dist'
+    const icon: string = core.getInput('icon')
     const tauriConfJson: string = core.getInput('tauri_conf_json')
     const cargoToml: string = core.getInput('cargo_toml')
     const buildRs: string = core.getInput('build_rs')
@@ -29,13 +32,21 @@ export async function run(): Promise<void> {
     const mainRs: string = core.getInput('main_rs')
 
     // Run `npm create tauri-app` command with the new inputs
-    await initialize(projectName, identifier, template, manager, frontendDist)
+    await initialize(
+      projectName,
+      identifier,
+      version,
+      template,
+      manager,
+      frontendDist,
+      icon
+    )
 
     // Optional file overwrites
     await overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs)
 
     // Build the Tauri app
-    await build()
+    await build(projectName, identifier, version)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
@@ -45,50 +56,65 @@ export async function run(): Promise<void> {
 async function initialize(
   projectName: string,
   identifier: string,
+  version: string,
   template: string,
   manager: string,
-  frontendDist: string
+  frontendDist: string,
+  icon: string
 ) {
+  // Create the tauri project files via `npm create tauri-app`
   await execPromise(
     `npm create tauri-app ${projectName} -- --identifier ${identifier} --template ${template} --manager ${manager} --yes --force`
   )
-  // Update `tauri.conf.json` with `frontend_dist`
+  // Update `build.frontendDist` and `version` of `tauri.conf.json`
   const tauriConfPath = path.join(projectName, 'src-tauri', 'tauri.conf.json')
   if (fs.existsSync(tauriConfPath)) {
     const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'))
     tauriConf.build.frontendDist = frontendDist
+    tauriConf.version = version
+    core.info(
+      `Updating tauri.conf.json with frontendDist: ${frontendDist}, version: ${version}`
+    )
     fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2))
   }
-
-  // Move files from `project_name` to the current directory
+  // copy package.json and src-tauri from projectName to the root of the project
   const projectPath = path.join(process.cwd(), projectName)
-  fs.readdirSync(projectPath).forEach(file => {
-    const srcPath = path.join(projectPath, file)
-    const destPath = path.join(process.cwd(), file)
-    fs.renameSync(srcPath, destPath)
+  const filesToCopy = ['package.json', 'src-tauri']
+  for (const file of filesToCopy) {
+    fs.cpSync(path.join(projectPath, file), path.join(process.cwd(), file), {
+      recursive: true
+    })
+  }
+  fs.rmSync(path.join(process.cwd(), projectName), {
+    recursive: true,
+    force: true
   })
+  // update icon if provided
+  if (icon && fs.existsSync(icon)) {
+    await execPromise(`npm run tauri -- icon ${icon}`)
+  }
 }
 
-function build() {
+async function build(projectName: string, identifier: string, version: string) {
   const platform = os.platform()
   let tauriBuild: TauriBuild
 
   if (platform === 'win32') {
-    tauriBuild = new WindowsTauriBuild()
+    tauriBuild = new WindowsTauriBuild(projectName, identifier, version)
   } else if (platform === 'linux') {
-    tauriBuild = new LinuxTauriBuild()
+    tauriBuild = new LinuxTauriBuild(projectName, identifier, version)
   } else if (platform === 'darwin') {
-    tauriBuild = new MacOSTauriBuild()
+    tauriBuild = new MacOSTauriBuild(projectName, identifier, version)
   } else {
     throw new Error(`Unsupported platform: ${platform}`)
   }
 
-  tauriBuild.install_prerequisites()
-  tauriBuild.before_build()
-  tauriBuild.build()
+  await tauriBuild.install_prerequisites()
+  await tauriBuild.before_build()
+  await tauriBuild.build()
 }
 
-function overwriteTauriFiles(
+async function overwriteTauriFiles(
   tauriConfJson: string,
   cargoToml: string,
   buildRs: string,
