@@ -13,6 +13,41 @@ inputs:
     description: 'Your input description here'
     required: true
     default: '1000'
+  project_name:
+    description: 'The name of the project'
+    required: false
+    default: 'tauri-app'
+  identifier:
+    description: 'The identifier for the project'
+    required: false
+    default: 'com.tauri-app.app'
+  template:
+    description: 'The template to use for the project'
+    required: false
+    default: 'vanilla'
+  manager:
+    description: 'The package manager to use'
+    required: false
+    default: 'npm'
+  frontend_dist:
+    description: 'The frontend distribution directory'
+    required: false
+    default: '../dist'
+  tauri_conf_json:
+    description: 'Optional tauri.conf.json file overwrite'
+    required: false
+  cargo_toml:
+    description: 'Optional Cargo.toml file overwrite'
+    required: false
+  build_rs:
+    description: 'Optional build.rs file overwrite'
+    required: false
+  lib_rs:
+    description: 'Optional lib.rs file overwrite'
+    required: false
+  main_rs:
+    description: 'Optional main.rs file overwrite'
+    required: false
 
 # Define your outputs here.
 outputs:

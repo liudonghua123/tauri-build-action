@@ -39,6 +39,26 @@ describe('action', () => {
       switch (name) {
         case 'milliseconds':
           return '500'
+        case 'project_name':
+          return 'tauri-app'
+        case 'identifier':
+          return 'com.tauri-app.app'
+        case 'template':
+          return 'vanilla'
+        case 'manager':
+          return 'npm'
+        case 'frontend_dist':
+          return '../dist'
+        case 'tauri_conf_json':
+          return ''
+        case 'cargo_toml':
+          return ''
+        case 'build_rs':
+          return ''
+        case 'lib_rs':
+          return ''
+        case 'main_rs':
+          return ''
         default:
           return ''
       }

@@ -208,6 +208,47 @@ steps:
     run: echo "${{ steps.test-action.outputs.time }}"
 ```
 
+## Example Workflow
+
+Here is an example of how to use the new inputs in a workflow:
+
+```yaml
+name: Tauri Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Create Tauri App
+        uses: ./ # Uses an action in the root directory
+        with:
+          project_name: 'my-tauri-app'
+          identifier: 'com.example.myapp'
+          template: 'vanilla'
+          manager: 'npm'
+          frontend_dist: '../dist'
+
+      - name: Build Tauri App
+        run: npm run build
+```
+
 ## Publishing a New Release
 
 This project includes a helper script, [`script/release`](./script/release)
