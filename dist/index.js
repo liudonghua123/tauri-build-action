@@ -24920,6 +24920,111 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 5197:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LinuxTauriBuild = void 0;
+const tauri_build_1 = __nccwpck_require__(6485);
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+class LinuxTauriBuild extends tauri_build_1.TauriBuild {
+    install_prerequisites() {
+        core.info('Installing prerequisites for Linux...');
+        // Add Linux-specific installation according to https://tauri.app/start/prerequisites/#linux
+        (0, utils_1.execPromise)('sudo apt update -y && sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev');
+    }
+    before_build() {
+        core.info('Before building for Linux...');
+        (0, utils_1.execPromise)('npm install');
+    }
+    build() {
+        core.info('Building for Linux...');
+        (0, utils_1.execPromise)('npm run tauri build');
+    }
+}
+exports.LinuxTauriBuild = LinuxTauriBuild;
+
+
+/***/ }),
+
+/***/ 7240:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MacOSTauriBuild = void 0;
+const tauri_build_1 = __nccwpck_require__(6485);
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+class MacOSTauriBuild extends tauri_build_1.TauriBuild {
+    install_prerequisites() {
+        core.info('Installing prerequisites for MacOS...');
+        // Add MacOS-specific installation according to https://tauri.app/start/prerequisites/#macos
+    }
+    before_build() {
+        core.info('Before building for MacOS...');
+        (0, utils_1.execPromise)('npm install');
+    }
+    build() {
+        core.info('Building for MacOS...');
+        (0, utils_1.execPromise)('npm run tauri build');
+    }
+}
+exports.MacOSTauriBuild = MacOSTauriBuild;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -24951,22 +25056,33 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
-const wait_1 = __nccwpck_require__(5259);
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
+const utils_1 = __nccwpck_require__(1314);
+const tauri_build_1 = __nccwpck_require__(6485);
+const os = __importStar(__nccwpck_require__(2037));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
+        const projectName = core.getInput('project_name') || 'tauri-app';
+        const identifier = core.getInput('identifier') || 'com.tauri-app.app';
+        const template = core.getInput('template') || 'vanilla';
+        const manager = core.getInput('manager') || 'npm';
+        const frontendDist = core.getInput('frontend_dist') || '../dist';
+        const tauriConfJson = core.getInput('tauri_conf_json');
+        const cargoToml = core.getInput('cargo_toml');
+        const buildRs = core.getInput('build_rs');
+        const libRs = core.getInput('lib_rs');
+        const mainRs = core.getInput('main_rs');
+        // Run `npm create tauri-app` command with the new inputs
+        await initialize(projectName, identifier, template, manager, frontendDist);
+        // Optional file overwrites
+        await overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs);
+        // Build the Tauri app
+        await build();
     }
     catch (error) {
         // Fail the workflow run if an error occurs
@@ -24974,30 +25090,173 @@ async function run() {
             core.setFailed(error.message);
     }
 }
+async function initialize(projectName, identifier, template, manager, frontendDist) {
+    await (0, utils_1.execPromise)(`npm create tauri-app ${projectName} -- --identifier ${identifier} --template ${template} --manager ${manager} --yes --force`);
+    // Update `tauri.conf.json` with `frontend_dist`
+    const tauriConfPath = path.join(projectName, 'src-tauri', 'tauri.conf.json');
+    if (fs.existsSync(tauriConfPath)) {
+        const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));
+        tauriConf.build.frontendDist = frontendDist;
+        fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2));
+    }
+    // Move files from `project_name` to the current directory
+    const projectPath = path.join(process.cwd(), projectName);
+    fs.readdirSync(projectPath).forEach(file => {
+        const srcPath = path.join(projectPath, file);
+        const destPath = path.join(process.cwd(), file);
+        fs.renameSync(srcPath, destPath);
+    });
+}
+function build() {
+    const platform = os.platform();
+    let tauriBuild;
+    if (platform === 'win32') {
+        tauriBuild = new tauri_build_1.WindowsTauriBuild();
+    }
+    else if (platform === 'linux') {
+        tauriBuild = new tauri_build_1.LinuxTauriBuild();
+    }
+    else if (platform === 'darwin') {
+        tauriBuild = new tauri_build_1.MacOSTauriBuild();
+    }
+    else {
+        throw new Error(`Unsupported platform: ${platform}`);
+    }
+    tauriBuild.install_prerequisites();
+    tauriBuild.before_build();
+    tauriBuild.build();
+}
+function overwriteTauriFiles(tauriConfJson, cargoToml, buildRs, libRs, mainRs) {
+    if (tauriConfJson) {
+        fs.writeFileSync(path.join('src-tauri', 'tauri.conf.json'), tauriConfJson);
+    }
+    if (cargoToml) {
+        fs.writeFileSync('Cargo.toml', cargoToml);
+    }
+    if (buildRs) {
+        fs.writeFileSync(path.join('src-tauri', 'build.rs'), buildRs);
+    }
+    if (libRs) {
+        fs.writeFileSync(path.join('src-tauri', 'src', 'lib.rs'), libRs);
+    }
+    if (mainRs) {
+        fs.writeFileSync(path.join('src-tauri', 'src', 'main.rs'), mainRs);
+    }
+}
 
 
 /***/ }),
 
-/***/ 5259:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 6485:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = wait;
+exports.MacOSTauriBuild = exports.LinuxTauriBuild = exports.WindowsTauriBuild = exports.TauriBuild = void 0;
+class TauriBuild {
+}
+exports.TauriBuild = TauriBuild;
+var windows_tauri_build_1 = __nccwpck_require__(7449);
+Object.defineProperty(exports, "WindowsTauriBuild", ({ enumerable: true, get: function () { return windows_tauri_build_1.WindowsTauriBuild; } }));
+var linux_tauri_build_1 = __nccwpck_require__(5197);
+Object.defineProperty(exports, "LinuxTauriBuild", ({ enumerable: true, get: function () { return linux_tauri_build_1.LinuxTauriBuild; } }));
+var macos_tauri_build_1 = __nccwpck_require__(7240);
+Object.defineProperty(exports, "MacOSTauriBuild", ({ enumerable: true, get: function () { return macos_tauri_build_1.MacOSTauriBuild; } }));
+
+
+/***/ }),
+
+/***/ 1314:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.execPromise = execPromise;
+const child_process_1 = __nccwpck_require__(2081);
 /**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
+ * exec() wrapper that returns a Promise. Stream stdout and stderr to the parent process.
+ * @param command The command to execute
  */
-async function wait(milliseconds) {
-    return new Promise(resolve => {
-        if (isNaN(milliseconds)) {
-            throw new Error('milliseconds not a number');
+async function execPromise(command) {
+    return new Promise((resolve, reject) => {
+        const command_process = (0, child_process_1.exec)(command);
+        // Check and stream stdout to the parent process
+        if (command_process.stdout) {
+            command_process.stdout.pipe(process.stdout);
         }
-        setTimeout(() => resolve('done!'), milliseconds);
+        // Check and stream stderr to the parent process
+        if (command_process.stderr) {
+            command_process.stderr.pipe(process.stderr);
+        }
+        // Handle process completion
+        command_process.on('close', code => {
+            if (code === 0) {
+                resolve(code); // Resolve if successful
+            }
+            else {
+                reject(new Error(`Command failed with code ${code}`)); // Reject if there's an error
+            }
+        });
+        // Handle errors in starting the process
+        command_process.on('error', error => {
+            reject(error);
+        });
     });
 }
+
+
+/***/ }),
+
+/***/ 7449:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.WindowsTauriBuild = void 0;
+const tauri_build_1 = __nccwpck_require__(6485);
+const core = __importStar(__nccwpck_require__(2186));
+const utils_1 = __nccwpck_require__(1314);
+class WindowsTauriBuild extends tauri_build_1.TauriBuild {
+    install_prerequisites() {
+        core.info('Installing prerequisites for Windows...');
+        // Add Windows-specific installation according to https://tauri.app/start/prerequisites/#windows
+    }
+    before_build() {
+        core.info('Before building for Windows...');
+        (0, utils_1.execPromise)('npm install');
+    }
+    build() {
+        core.info('Building for Windows...');
+        (0, utils_1.execPromise)('npm run tauri build');
+    }
+}
+exports.WindowsTauriBuild = WindowsTauriBuild;
 
 
 /***/ }),
@@ -25023,6 +25282,14 @@ module.exports = require("async_hooks");
 
 "use strict";
 module.exports = require("buffer");
+
+/***/ }),
+
+/***/ 2081:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 

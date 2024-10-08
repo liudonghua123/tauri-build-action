@@ -9,13 +9,9 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
-    required: true
-    default: '1000'
   project_name:
     description: 'The name of the project'
-    required: false
+    required: true
     default: 'tauri-app'
   identifier:
     description: 'The identifier for the project'
@@ -48,11 +44,6 @@ inputs:
   main_rs:
     description: 'Optional main.rs file overwrite'
     required: false
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
 
 runs:
   using: node20

@@ -57,8 +57,8 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
-
-      - name: Print Output
-        id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+          project_name: tauri-app
+          identifier: com.tauri-app.app
+          template: vanilla
+          manager: npm
+          frontend_dist: ../dist
