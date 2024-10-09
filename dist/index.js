@@ -25224,13 +25224,10 @@ EOF`);
         await (0, utils_1.execPromise)(`ls -la /usr /usr/lib /usr/lib/arm-linux-gnueabihf`);
         // build for armv7, skip appimage as mentioned above
         await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/arm-linux-gnueabihf/pkgconfig/ && export PKG_CONFIG_SYSROOT_DIR=/usr/arm-linux-gnueabihf/ && npm run tauri -- build -t armv7-unknown-linux-gnueabihf -b deb,rpm');
-        // build for android
-        // https://tauri.app/distribute/google-play/#build-apks
-        await (0, utils_1.execPromise)('export NDK_HOME=$ANDROID_NDK_HOME && npm run tauri -- android build');
     }
     async after_build() {
         core.info('After building for Linux...');
-        const filesToCopy = [
+        let filesToCopy = [
             // x86_64
             {
                 from: `src-tauri/target/x86_64-unknown-linux-gnu/release/${this.projectName}`,
@@ -25290,7 +25287,17 @@ EOF`);
             {
                 from: `src-tauri/target/armv7-unknown-linux-gnueabihf/release/bundle/rpm/${this.projectName}-${this.version}-1.armhfp.rpm`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}.armhfp.rpm`
-            },
+            }
+        ];
+        for (const file of filesToCopy) {
+            await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+        }
+        // Build for android after cleanup target directory
+        await (0, utils_1.execPromise)('rm -rf src-tauri/target');
+        // build for android
+        // https://tauri.app/distribute/google-play/#build-apks
+        await (0, utils_1.execPromise)('export NDK_HOME=$ANDROID_NDK_HOME && npm run tauri -- android build');
+        filesToCopy = [
             // android
             {
                 from: `src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk`,
