@@ -115,6 +115,14 @@ async function initialize({
   const projectPath = path.join(process.cwd(), projectName)
   const filesToCopy = ['package.json', 'src-tauri']
   for (const file of filesToCopy) {
+    // skip if the file exists already
+    if (fs.existsSync(path.join(process.cwd(), file))) {
+      core.info(`Skipping ${file} as it already exists`)
+      continue
+    }
+    core.info(
+      `Copying ${file} generated via "npm create tauri-app" to the root of the project`
+    )
     fs.cpSync(path.join(projectPath, file), path.join(process.cwd(), file), {
       recursive: true,
       force: true
