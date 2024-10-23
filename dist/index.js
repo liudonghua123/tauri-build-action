@@ -25026,15 +25026,6 @@ async function checkEnviroment() {
 async function initialize({ projectName, identifier, version, template, manager, frontendDist, outputDir, icon }) {
     // Create the tauri project files via `npm create tauri-app`
     await (0, utils_1.execPromise)(`npm create tauri-app ${projectName} -- --identifier ${identifier} --template ${template} --manager ${manager} --yes --force`);
-    // Update `build.frontendDist` and `version` of `tauri.conf.json`
-    const tauriConfPath = path.join(projectName, 'src-tauri', 'tauri.conf.json');
-    if (fs.existsSync(tauriConfPath)) {
-        const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));
-        tauriConf.build.frontendDist = frontendDist;
-        tauriConf.version = version;
-        core.info(`Updating tauri.conf.json with frontendDist: ${frontendDist}, version: ${version}`);
-        fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2));
-    }
     // copy package.json and src-tauri from projectName to the root of the project
     const projectPath = path.join(process.cwd(), projectName);
     const filesToCopy = ['package.json', 'src-tauri'];
@@ -25054,6 +25045,15 @@ async function initialize({ projectName, identifier, version, template, manager,
         recursive: true,
         force: true
     });
+    // Update `build.frontendDist` and `version` of `tauri.conf.json`
+    const tauriConfPath = path.join(process.cwd(), 'src-tauri', 'tauri.conf.json');
+    if (fs.existsSync(tauriConfPath)) {
+        const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));
+        tauriConf.build.frontendDist = frontendDist;
+        tauriConf.version = version;
+        core.info(`Updating tauri.conf.json with frontendDist: ${frontendDist}, version: ${version}`);
+        fs.writeFileSync(tauriConfPath, JSON.stringify(tauriConf, null, 2));
+    }
     // install tauri dependencies
     await (0, utils_1.execPromise)(`npm install`);
     // update icon if provided
