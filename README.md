@@ -6,11 +6,14 @@
 [![CodeQL](https://github.com/liudonghua123/tauri-build-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/liudonghua123/tauri-build-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-This GitHub Action helps you build Tauri applications across different operating systems. It provides a streamlined way to set up, configure, and build Tauri projects using various templates and package managers.
+This GitHub Action helps you build Tauri applications across different operating
+systems. It provides a streamlined way to set up, configure, and build Tauri
+projects using various templates and package managers.
 
 ## Inputs
 
-The action supports the following inputs, which are defined in the `action.yml` file:
+The action supports the following inputs, which are defined in the `action.yml`
+file:
 
 - `project_name`: The name of the project (default: `tauri-app`)
 - `identifier`: The identifier for the project (default: `com.tauri-app.app`)
@@ -84,7 +87,8 @@ jobs:
 
 ### Linux
 
-For Linux, the action installs the necessary dependencies and sets up the environment for cross-compiling to different architectures. The steps include:
+For Linux, the action installs the necessary dependencies and sets up the
+environment for cross-compiling to different architectures. The steps include:
 
 1. Adding the necessary repositories and updating the package list.
 2. Installing common dependencies.
@@ -96,7 +100,8 @@ For Linux, the action installs the necessary dependencies and sets up the enviro
 
 ### macOS
 
-For macOS, the action installs the necessary dependencies and sets up the environment for building Tauri applications. The steps include:
+For macOS, the action installs the necessary dependencies and sets up the
+environment for building Tauri applications. The steps include:
 
 1. Installing the necessary prerequisites.
 2. Initializing the iOS build environment.
@@ -105,7 +110,8 @@ For macOS, the action installs the necessary dependencies and sets up the enviro
 
 ### Windows
 
-For Windows, the action installs the necessary dependencies and sets up the environment for building Tauri applications. The steps include:
+For Windows, the action installs the necessary dependencies and sets up the
+environment for building Tauri applications. The steps include:
 
 1. Installing the necessary prerequisites.
 2. Building for x86_64, i686, and aarch64 architectures.

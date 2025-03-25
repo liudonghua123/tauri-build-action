@@ -9,16 +9,21 @@ class TauriBuildLinux extends TauriBuild {
     core.info('Installing prerequisites for Linux...')
     // Add Linux-specific installation according to https://tauri.app/start/prerequisites/#linux
     await execPromise(`codename=$(lsb_release -cs) && sudo tee /etc/apt/sources.list << EOF
-deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename main multiverse universe restricted
-deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-security main multiverse universe restricted
-deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-updates main multiverse universe restricted
-deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-backports main multiverse universe restricted
+# Main repositories for amd64 and i386
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-security main restricted universe multiverse
+deb [arch=amd64,i386] http://archive.ubuntu.com/ubuntu $codename-backports main restricted universe multiverse
 
-deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename main multiverse universe restricted
-deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-security main multiverse universe restricted
-deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-updates main multiverse universe restricted
-deb [arch-=amd64,i386] http://ports.ubuntu.com/ubuntu-ports $codename-backports main multiverse universe restricted
+# Ports repositories for arm64 and armhf
+deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename main restricted universe multiverse
+deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates main restricted universe multiverse
+deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
+deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
 EOF`)
+    await execPromise(
+      'sudo cat /etc/apt/sources.list &&sudo ls -la /etc/apt/sources.list.d && sudo cat /etc/apt/sources.list.d/* || true'
+    )
     await execPromise(
       'sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt update -y'
     )
