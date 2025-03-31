@@ -25186,8 +25186,8 @@ deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates ma
 deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
 deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
 EOF`);
-        await (0, utils_1.execPromise)('sudo cat /etc/apt/sources.list && sudo ls -la /etc/apt/sources.list.d && sudo cat /etc/apt/sources.list.d/* && sudo rm -rf /etc/apt/sources.list.d/* || true');
-        await (0, utils_1.execPromise)('sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt update -y');
+        await (0, utils_1.execPromise)('sudo cat /etc/apt/sources.list && sudo ls -la /etc/apt/sources.list.d && sudo cat /etc/apt/sources.list.d/* && sudo rm -rf /etc/apt/sources.list.d/* /var/lib/apt/lists/* /var/cache/apt/archives/* || true');
+        await (0, utils_1.execPromise)('sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt clean -y && sudo apt autoclean -y && sudo apt update -y');
         // install common dependencies
         await (0, utils_1.execPromise)('sudo apt install -y build-essential curl wget file gcc-multilib g++-multilib');
         // install x86_64 dependencies

@@ -22,10 +22,10 @@ deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security m
 deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
 EOF`)
     await execPromise(
-      'sudo cat /etc/apt/sources.list && sudo ls -la /etc/apt/sources.list.d && sudo cat /etc/apt/sources.list.d/* && sudo rm -rf /etc/apt/sources.list.d/* || true'
+      'sudo cat /etc/apt/sources.list && sudo ls -la /etc/apt/sources.list.d && sudo cat /etc/apt/sources.list.d/* && sudo rm -rf /etc/apt/sources.list.d/* /var/lib/apt/lists/* /var/cache/apt/archives/* || true'
     )
     await execPromise(
-      'sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt update -y'
+      'sudo dpkg --add-architecture i386 && sudo dpkg --add-architecture arm64 && sudo dpkg --add-architecture armhf && sudo apt clean -y && sudo apt autoclean -y && sudo apt update -y'
     )
     // install common dependencies
     await execPromise(
