@@ -1,0 +1,45 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-native-executable:
+    name: 'Build native executable'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 22.x
+      - name: Check web assets
+        run: |
+          echo "Checking web assets..."
+          pwd
+          ls -la . test-tauri || true
+        shell: bash
+      - name: Tauri build
+        id: tauri-build
+        uses: ./
+        with:
+          project_name: tauri-app
+          identifier: com.tauri-app.app
+          version: 0.1.0
+          frontend_dist: ../test-tauri
+      - name: Display structure of build files
+        run: |
+          ls -la . tauri-build
+        shell: bash
