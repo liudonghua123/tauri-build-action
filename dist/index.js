@@ -25218,18 +25218,18 @@ EOF`);
         // build for x86_64
         await (0, utils_1.execPromise)('npm run tauri -- build -t x86_64-unknown-linux-gnu');
         // install i386 dependencies, libayatana-appindicator3-dev:i386, libxdo-dev:i386 is missing, see https://packages.ubuntu.com/noble/libayatana-appindicator3-dev, https://packages.ubuntu.com/noble/libxdo-dev
-        await (0, utils_1.execPromise)('sudo apt install -y libwebkit2gtk-4.1-dev:i386 libssl-dev:i386 librsvg2-dev:i386 libsoup-3.0-dev:i386');
+        await (0, utils_1.execPromise)('sudo apt remove -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev --auto-remove && sudo apt install -y libwebkit2gtk-4.1-dev:i386 libssl-dev:i386 librsvg2-dev:i386 libsoup-3.0-dev:i386');
         await (0, utils_1.execPromise)(`ls -la /usr /usr/lib /usr/lib/i386-linux-gnu`);
         // build for i686
-        await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/i386-linux-gnu/pkgconfig/ && export PKG_CONFIG_SYSROOT_DIR=/usr/i386-linux-gnu/ && npm run tauri -- build -t i686-unknown-linux-gnu');
+        await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/i386-linux-gnu/pkgconfig/ && export PKG_CONFIG_SYSROOT_DIR=/usr/i386-linux-gnu/ && npm run tauri -- build -t i686-unknown-linux-gnu -b deb,rpm');
         // install aarch64 dependencies
-        await (0, utils_1.execPromise)('sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross patchelf:arm64 libwebkit2gtk-4.1-dev:arm64 libxdo-dev:arm64 libssl-dev:arm64 libayatana-appindicator3-dev:arm64 librsvg2-dev:arm64 libsoup-3.0-dev:arm64');
+        await (0, utils_1.execPromise)('sudo apt remove -y libwebkit2gtk-4.1-dev:i386 libssl-dev:i386 librsvg2-dev:i386 libsoup-3.0-dev:i386 --auto-remove && sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross patchelf:arm64 libwebkit2gtk-4.1-dev:arm64 libxdo-dev:arm64 libssl-dev:arm64 libayatana-appindicator3-dev:arm64 librsvg2-dev:arm64 libsoup-3.0-dev:arm64');
         await (0, utils_1.execPromise)(`ls -la /usr /usr/lib /usr/lib/aarch64-linux-gnu`);
         // build for aarch64, skip appimage due to Error failed to bundle project: error running build_appimage.sh: `failed to run /home/runner/work/tauri-build-action/tauri-build-action/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/build_appimage.sh`
         // see also https://v2.tauri.app/distribute/appimage/#appimages-for-arm-based-devices.
         await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/aarch64-linux-gnu/pkgconfig/ && export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/ && npm run tauri -- build -t aarch64-unknown-linux-gnu -b deb,rpm');
         // install armhf dependencies
-        await (0, utils_1.execPromise)('sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross patchelf:armhf libwebkit2gtk-4.1-dev:armhf libxdo-dev:armhf libssl-dev:armhf libayatana-appindicator3-dev:armhf librsvg2-dev:armhf libsoup-3.0-dev:armhf');
+        await (0, utils_1.execPromise)('sudo apt remove -y libwebkit2gtk-4.1-dev:arm64 libxdo-dev:arm64 libssl-dev:arm64 libayatana-appindicator3-dev:arm64 librsvg2-dev:arm64 libsoup-3.0-dev:arm64 --auto-remove && sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross patchelf:armhf libwebkit2gtk-4.1-dev:armhf libxdo-dev:armhf libssl-dev:armhf libayatana-appindicator3-dev:armhf librsvg2-dev:armhf libsoup-3.0-dev:armhf');
         await (0, utils_1.execPromise)(`ls -la /usr /usr/lib /usr/lib/arm-linux-gnueabihf`);
         // build for armv7, skip appimage as mentioned above
         await (0, utils_1.execPromise)('export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/arm-linux-gnueabihf/pkgconfig/ && export PKG_CONFIG_SYSROOT_DIR=/usr/arm-linux-gnueabihf/ && npm run tauri -- build -t armv7-unknown-linux-gnueabihf -b deb,rpm');
