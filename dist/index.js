@@ -25168,6 +25168,7 @@ exports.TauriBuildLinux = void 0;
 const tauri_build_1 = __nccwpck_require__(6485);
 const core = __importStar(__nccwpck_require__(2186));
 const utils_1 = __nccwpck_require__(1314);
+const fs_1 = __nccwpck_require__(7147);
 class TauriBuildLinux extends tauri_build_1.TauriBuild {
     os_label = 'linux';
     async install_prerequisites() {
@@ -25243,10 +25244,6 @@ EOF`);
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64`
             },
             {
-                from: `src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/${this.projectName}_${this.version}_amd64.AppImage`,
-                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64.AppImage`
-            },
-            {
                 from: `src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/${this.projectName}_${this.version}_amd64.deb`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64.deb`
             },
@@ -25254,14 +25251,14 @@ EOF`);
                 from: `src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/${this.projectName}-${this.version}-1.x86_64.rpm`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}.x86_64.rpm`
             },
+            {
+                from: `src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/${this.projectName}_${this.version}_amd64.AppImage`,
+                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_amd64.AppImage`
+            },
             // i686
             {
                 from: `src-tauri/target/i686-unknown-linux-gnu/release/${this.projectName}`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386`
-            },
-            {
-                from: `src-tauri/target/i686-unknown-linux-gnu/release/bundle/appimage/${this.projectName}_${this.version}_i386.AppImage`,
-                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386.AppImage`
             },
             {
                 from: `src-tauri/target/i686-unknown-linux-gnu/release/bundle/deb/${this.projectName}_${this.version}_i386.deb`,
@@ -25270,6 +25267,10 @@ EOF`);
             {
                 from: `src-tauri/target/i686-unknown-linux-gnu/release/bundle/rpm/${this.projectName}-${this.version}-1.i386.rpm`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}.i386.rpm`
+            },
+            {
+                from: `src-tauri/target/i686-unknown-linux-gnu/release/bundle/appimage/${this.projectName}_${this.version}_i386.AppImage`,
+                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_i386.AppImage`
             },
             // aarch64
             {
@@ -25284,6 +25285,10 @@ EOF`);
                 from: `src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/${this.projectName}-${this.version}-1.aarch64.rpm`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}.aarch64.rpm`
             },
+            {
+                from: `src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/${this.projectName}_${this.version}_aarch64.AppImage`,
+                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_aarch64.AppImage`
+            },
             // armv7
             {
                 from: `src-tauri/target/armv7-unknown-linux-gnueabihf/release/${this.projectName}`,
@@ -25296,10 +25301,21 @@ EOF`);
             {
                 from: `src-tauri/target/armv7-unknown-linux-gnueabihf/release/bundle/rpm/${this.projectName}-${this.version}-1.armhfp.rpm`,
                 to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}.armhfp.rpm`
+            },
+            {
+                from: `src-tauri/target/armv7-unknown-linux-gnueabihf/release/bundle/appimage/${this.projectName}_${this.version}_armhfp.AppImage`,
+                to: `${this.outputDir}/${this.projectName}-${this.os_label}-${this.version}_armhfp.AppImage`
             }
         ];
         for (const file of filesToCopy) {
-            await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+            // check if the source file exists
+            if ((0, fs_1.existsSync)(file.from)) {
+                core.info(`Copying ${file.from} to ${file.to}`);
+                await (0, utils_1.execPromise)(`cp ${file.from} ${file.to}`);
+            }
+            else {
+                core.warning(`Source file ${file.from} does not exist`);
+            }
         }
         // Build for android after cleanup target directory
         await (0, utils_1.execPromise)('rm -rf src-tauri/target');
